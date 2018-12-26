@@ -33,6 +33,8 @@ int main(int argc, const char * argv[]) {
 		pos += read;
 		fwrite(buffer, 1, read, outFile);
 	}
+	
+	retval = EXIT_SUCCESS;
 
 	fclose(outFile);
 failOpusStreamfile:
