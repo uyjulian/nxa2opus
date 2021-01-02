@@ -14,7 +14,7 @@
  *   https://github.com/hcs64/ww2ogg
  */
 
-static size_t make_oggs_first(uint8_t * buf, int buf_size, int channels, int skip, int sample_rate);
+static size_t make_oggs_first(uint8_t * buf, int buf_size, int channels, int skip, int sample_rate, int loopstart, int loopend);
 static size_t make_oggs_page(uint8_t * buf, int buf_size, size_t data_size, int page_sequence, int granule);
 static size_t opus_get_packet_samples(const uint8_t * buf, int len);
 static size_t get_xopus_packet_size(int packet, STREAMFILE * streamfile);
@@ -209,7 +209,7 @@ size_t opus_io_size(STREAMFILE *streamfile, opus_io_data* data) {
 
 
 /* Prepares custom IO for custom Opus, that is converted to Ogg Opus on the fly */
-STREAMFILE* setup_opus_streamfile(STREAMFILE *streamFile, int channels, int skip, int sample_rate, off_t stream_offset, size_t stream_size, opus_type_t type) {
+STREAMFILE* setup_opus_streamfile(STREAMFILE *streamFile, int channels, int skip, int sample_rate, off_t stream_offset, size_t stream_size, opus_type_t type, int loopstart, int loopend) {
 	STREAMFILE *temp_streamFile = NULL, *new_streamFile = NULL;
 	opus_io_data io_data = {0};
 	size_t io_data_size = sizeof(opus_io_data);
@@ -218,7 +218,7 @@ STREAMFILE* setup_opus_streamfile(STREAMFILE *streamFile, int channels, int skip
 	io_data.stream_offset = stream_offset;
 	io_data.stream_size = stream_size;
 	io_data.physical_offset = stream_offset;
-	io_data.head_size = make_oggs_first(io_data.head_buffer, sizeof(io_data.head_buffer), channels, skip, sample_rate);
+	io_data.head_size = make_oggs_first(io_data.head_buffer, sizeof(io_data.head_buffer), channels, skip, sample_rate, loopstart, loopend);
 	if (!io_data.head_size) goto fail;
 	io_data.sequence = 2;
 	io_data.logical_size = opus_io_size(streamFile, &io_data); /* force init */
@@ -436,15 +436,23 @@ fail:
 	return 0;
 }
 
-static size_t make_opus_comment(uint8_t * buf, int buf_size) {
+static size_t make_opus_comment(uint8_t * buf, int buf_size, int loop_start, int loop_end) {
 	const char * vendor_string = "vgmstream";
 	const char * user_comment_0_string = "vgmstream Opus converter";
 	size_t comment_size;
-	int vendor_string_length, user_comment_0_length;
+	int vendor_string_length, user_comment_0_length, user_comment_list_length = 1;
+	char loopstart_buf[64], loopend_buf[64];
+	int loopstart_length = 0, loopend_length = 0, loopextra = 0;
+	if (loop_start || loop_end) {
+		loopstart_length = sprintf(loopstart_buf, "LoopStart=%u", loop_start);
+		loopend_length = sprintf(loopend_buf, "LoopEnd=%u", loop_end);
+		loopextra = 8 + loopstart_length + loopend_length;
+		user_comment_list_length = 3;
+	}
 
 	vendor_string_length = strlen(vendor_string);
 	user_comment_0_length = strlen(user_comment_0_string);
-	comment_size = 0x14 + vendor_string_length + user_comment_0_length;
+	comment_size = 0x14 + vendor_string_length + user_comment_0_length + loopextra;
 
 	if (comment_size > buf_size) {
 		VGM_LOG("OPUS: buffer can't hold comment\n");
@@ -455,16 +463,24 @@ static size_t make_opus_comment(uint8_t * buf, int buf_size) {
 	put_32bitBE(buf+0x04, 0x54616773); /* "Tags" header magic */
 	put_32bitLE(buf+0x08, vendor_string_length);
 	memcpy     (buf+0x0c, vendor_string, vendor_string_length);
-	put_32bitLE(buf+0x0c + vendor_string_length+0x00, 1); /* user_comment_list_length */
+	put_32bitLE(buf+0x0c + vendor_string_length+0x00, user_comment_list_length);
 	put_32bitLE(buf+0x0c + vendor_string_length+0x04, user_comment_0_length);
 	memcpy     (buf+0x0c + vendor_string_length+0x08, user_comment_0_string, user_comment_0_length);
+	if (loopextra) {
+		uint8_t * write = buf+0x0c + vendor_string_length+0x08 + user_comment_0_length;
+		put_32bitLE(write, loopstart_length);
+		memcpy(write + 4, loopstart_buf, loopstart_length);
+		write += loopstart_length + 4;
+		put_32bitLE(write, loopend_length);
+		memcpy(write + 4, loopend_buf, loopend_length);
+	}
 
 	return comment_size;
 fail:
 	return 0;
 }
 
-static size_t make_oggs_first(uint8_t * buf, int buf_size, int channels, int skip, int sample_rate) {
+static size_t make_oggs_first(uint8_t * buf, int buf_size, int channels, int skip, int sample_rate, int loopstart, int loopend) {
 	int buf_done = 0;
 	size_t bytes;
 
@@ -477,7 +493,7 @@ static size_t make_oggs_first(uint8_t * buf, int buf_size, int channels, int ski
 	buf_done += 0x1c + bytes;
 
 	/* make comment */
-	bytes = make_opus_comment(buf+buf_done + 0x1c,buf_size);
+	bytes = make_opus_comment(buf+buf_done + 0x1c,buf_size, loopstart, loopend);
 	make_oggs_page(buf+buf_done + 0x00,buf_size, bytes, 1, 0);
 	buf_done += 0x1c + bytes;
 

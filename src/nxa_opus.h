@@ -29,4 +29,4 @@ size_t opus_io_read(STREAMFILE *streamfile, uint8_t *dest, off_t offset, size_t 
 
 size_t opus_io_size(STREAMFILE *streamfile, opus_io_data* data);
 
-STREAMFILE* setup_opus_streamfile(STREAMFILE *streamFile, int channels, int skip, int sample_rate, off_t stream_offset, size_t stream_size, opus_type_t type);
+STREAMFILE* setup_opus_streamfile(STREAMFILE *streamFile, int channels, int skip, int sample_rate, off_t stream_offset, size_t stream_size, opus_type_t type, int loopstart, int loopend);

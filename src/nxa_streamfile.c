@@ -30,6 +30,13 @@ STREAMFILE *init_opus_nxa(STREAMFILE *streamFile) {
 //	vgmstream->num_samples = read_32bitLE(0x20, streamFile);
 	int sample_rate = read_32bitLE(0x0C, streamFile);
 
+	int samples = read_32bitLE(0x18, streamFile);
+	int loopstart = read_32bitLE(0x1c, streamFile);
+	int loopend = read_32bitLE(0x20, streamFile);
+	if (loopstart == 0 && loopend == samples) {
+		loopend = 0;
+	}
+
 //	{
 //		vgmstream->codec_data = init_ffmpeg_switch_opus(streamFile, start_offset, data_size, vgmstream->channels, skip, vgmstream->sample_rate);
 //		if (!vgmstream->codec_data) goto fail;
@@ -41,7 +48,7 @@ STREAMFILE *init_opus_nxa(STREAMFILE *streamFile) {
 //		}
 //	}
 
-	return setup_opus_streamfile(streamFile, channel_count, skip, sample_rate, start_offset, data_size, version == 2 ? OPUS_NXAv2 : OPUS_SWITCH);
+	return setup_opus_streamfile(streamFile, channel_count, skip, sample_rate, start_offset, data_size, version == 2 ? OPUS_NXAv2 : OPUS_SWITCH, loopstart, loopend);
 	/* open the file for reading */
 //	if (!vgmstream_open_stream(vgmstream, streamFile, start_offset))
 //		goto fail;
