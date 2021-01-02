@@ -2,7 +2,7 @@
 
 #include "streamfile.h"
 
-typedef enum { OPUS_SWITCH, OPUS_UE4, OPUS_EA, OPUS_X } opus_type_t;
+typedef enum { OPUS_SWITCH, OPUS_NXAv2, OPUS_UE4, OPUS_EA, OPUS_X } opus_type_t;
 
 typedef struct {
 	/* config */

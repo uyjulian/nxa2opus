@@ -74,6 +74,10 @@ size_t opus_io_read(STREAMFILE *streamfile, uint8_t *dest, off_t offset, size_t 
 					data_size = read_32bitBE(data->physical_offset, streamfile);
 					skip_size = 0x08; /* size + Opus state(?) */
 					break;
+				case OPUS_NXAv2:
+					data_size = read_16bitLE(0x12, streamfile);
+					skip_size = 0;
+					break;
 				case OPUS_UE4:
 					data_size = (uint16_t)read_16bitLE(data->physical_offset, streamfile);
 					skip_size = 0x02;
@@ -166,6 +170,10 @@ size_t opus_io_size(STREAMFILE *streamfile, opus_io_data* data) {
 			case OPUS_SWITCH:
 				data_size = read_32bitBE(physical_offset, streamfile);
 				skip_size = 0x08;
+				break;
+			case OPUS_NXAv2:
+				data_size = read_16bitLE(0x12, streamfile);
+				skip_size = 0;
 				break;
 			case OPUS_UE4:
 				data_size = (uint16_t)read_16bitLE(physical_offset, streamfile);
@@ -504,6 +512,10 @@ static size_t custom_opus_get_samples(off_t offset, size_t data_size, STREAMFILE
 				data_size = read_32bitBE(offset, streamFile);
 				skip_size = 0x08;
 				break;
+			case OPUS_NXAv2:
+				data_size = read_16bitLE(0x12, streamFile);
+				skip_size = 0;
+				break;
 			case OPUS_UE4:
 				data_size = (uint16_t)read_16bitLE(offset, streamFile);
 				skip_size = 0x02;
@@ -542,6 +554,9 @@ static size_t custom_opus_get_encoder_delay(off_t offset, STREAMFILE *streamFile
 	switch(type) {
 		case OPUS_SWITCH:
 			skip_size = 0x08;
+			break;
+		case OPUS_NXAv2:
+			skip_size = 0;
 			break;
 		case OPUS_UE4:
 			skip_size = 0x02;

@@ -12,6 +12,7 @@ STREAMFILE *init_opus_nxa(STREAMFILE *streamFile) {
 	if (read_32bitBE(0x00, streamFile) != 0x4E584131) /* "NXA1" */
 		goto fail;
 
+	int version = read_32bitLE(0x04, streamFile);
 	channel_count = read_16bitLE(0x10, streamFile);
 	skip = read_16bitLE(0x16, streamFile);
 	data_size = read_32bitLE(0x08, streamFile)-0x30;
@@ -40,7 +41,7 @@ STREAMFILE *init_opus_nxa(STREAMFILE *streamFile) {
 //		}
 //	}
 
-	return setup_opus_streamfile(streamFile, channel_count, skip, sample_rate, start_offset, data_size, OPUS_SWITCH);
+	return setup_opus_streamfile(streamFile, channel_count, skip, sample_rate, start_offset, data_size, version == 2 ? OPUS_NXAv2 : OPUS_SWITCH);
 	/* open the file for reading */
 //	if (!vgmstream_open_stream(vgmstream, streamFile, start_offset))
 //		goto fail;
