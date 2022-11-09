@@ -187,6 +187,93 @@ static inline int8_t read_8bit(off_t offset, STREAMFILE * streamfile) {
     if (read_streamfile(buf,offset,1,streamfile)!=1) return -1;
     return buf[0];
 }
+static inline int16_t read_s16le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[2];
+
+    if (read_streamfile(buf,offset,2,streamfile)!=2) return -1;
+    return get_16bitLE(buf);
+}
+static inline int16_t read_s16be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[2];
+
+    if (read_streamfile(buf,offset,2,streamfile)!=2) return -1;
+    return get_16bitBE(buf);
+}
+static inline int32_t read_s32le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[4];
+
+    if (read_streamfile(buf,offset,4,streamfile)!=4) return -1;
+    return get_32bitLE(buf);
+}
+static inline int32_t read_s32be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[4];
+
+    if (read_streamfile(buf,offset,4,streamfile)!=4) return -1;
+    return get_32bitBE(buf);
+}
+static inline int64_t read_s64le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[8];
+
+    if (read_streamfile(buf,offset,8,streamfile)!=8) return -1;
+    return get_64bitLE(buf);
+}
+static inline int64_t read_s64be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[8];
+
+    if (read_streamfile(buf,offset,8,streamfile)!=8) return -1;
+    return get_64bitBE(buf);
+}
+
+static inline int8_t read_s8(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[1];
+
+    if (read_streamfile(buf,offset,1,streamfile)!=1) return -1;
+    return buf[0];
+}
+
+static inline uint16_t read_u16le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[2];
+
+    if (read_streamfile(buf,offset,2,streamfile)!=2) return -1;
+    return get_u16le(buf);
+}
+static inline uint16_t read_u16be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[2];
+
+    if (read_streamfile(buf,offset,2,streamfile)!=2) return -1;
+    return get_u16be(buf);
+}
+static inline uint32_t read_u32le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[4];
+
+    if (read_streamfile(buf,offset,4,streamfile)!=4) return -1;
+    return get_u32le(buf);
+}
+static inline uint32_t read_u32be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[4];
+
+    if (read_streamfile(buf,offset,4,streamfile)!=4) return -1;
+    return get_u32be(buf);
+}
+static inline uint64_t read_u64le(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[8];
+
+    if (read_streamfile(buf,offset,8,streamfile)!=8) return -1;
+    return get_u64le(buf);
+}
+static inline uint64_t read_u64be(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[8];
+
+    if (read_streamfile(buf,offset,8,streamfile)!=8) return -1;
+    return get_u64be(buf);
+}
+
+static inline uint8_t read_u8(off_t offset, STREAMFILE * streamfile) {
+    uint8_t buf[1];
+
+    if (read_streamfile(buf,offset,1,streamfile)!=1) return -1;
+    return buf[0];
+}
 
 /* guess byte endianness from a given value, return true if big endian and false if little endian */
 /* TODO: possibly improve */
