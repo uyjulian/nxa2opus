@@ -56,7 +56,7 @@ STREAMFILE *init_opus_nxa(STREAMFILE *sf) {
     int loop_flag = 0, channels, sample_rate;
     off_t data_offset, context_offset, multistream_offset = 0;
     size_t data_size, skip = 0;
-    off_t offset;
+    off_t offset = 0;
     int32_t num_samples;
     int32_t loop_start;
     int32_t loop_end;
@@ -111,7 +111,10 @@ STREAMFILE *init_opus_nxa(STREAMFILE *sf) {
     /* 'data info' chunk */
     data_offset += offset;
     if (read_u32le(data_offset, sf) != 0x80000004)
+    {
+        printf("Data info fail\n");
         goto fail;
+    }
 
     data_size = read_u32le(data_offset + 0x04, sf);
 
